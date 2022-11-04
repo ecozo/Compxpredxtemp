@@ -14,3 +14,11 @@ knitr::opts_chunk$set(echo = TRUE)
 #+{r
 library(tidyverse)
 
+
+df <- read.csv("Data/comp_data.csv", header = T)
+
+#I'll analyze the simo and pulex data separately
+#Pulex first
+
+Pulexdf <- df%>%
+  filter(Treat == "Pulex yes" | "Pulex no")
