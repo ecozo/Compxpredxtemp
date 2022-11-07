@@ -15,10 +15,15 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 
 
-df <- read.csv("Data/comp_data.csv", header = T)
+df <- read.csv("Data/comp_data.csv", header = T)%>%
+  mutate_at(vars(Trial, Bath, Location, Species, Pred), as.factor)
+
 
 #I'll analyze the simo and pulex data separately
 #Pulex first
 
 Pulexdf <- df%>%
-  filter(Treat == "Pulex yes" | "Pulex no")
+  filter(Species %in% c("Pulex", "Comp"))%>%
+  drop_na(Pulex) #Adding this because at the moment all the samples haven't been processed. I need to check any NA's after all data has be input
+
+#Exploratory analysis
