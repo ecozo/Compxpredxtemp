@@ -1,4 +1,4 @@
-Trial,Bath,TempF,TempC,Location,Species,Pred,Pulex,Simo
+Trial,Bath,TempF,TempC,Location,Species,Pred,Pulex.surv,Simo.surv
 1,1,77,25,1,Pulex,Y,53,
 1,1,77,25,2,Comp,N,71,7
 1,1,77,25,3,Simo,N,,0

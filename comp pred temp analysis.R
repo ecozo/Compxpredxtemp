@@ -24,13 +24,13 @@ df <- read.csv("Data/comp_data.csv", header = T)%>%
 
 Pulexdf <- df%>%
   filter(Species %in% c("Pulex", "Comp"))%>%
-  drop_na(Pulex) #Adding this because at the moment all the samples haven't been processed. I need to check any NA's after all data has be input
+  drop_na(Pulex.surv) #Adding this because at the moment all the samples haven't been processed. I need to check any NA's after all data has be input
 
 ##Exploratory analysis
 
 ###Plot
 Pulexdf%>%
-  ggplot(aes(x = TempC, y = Pulex, color = Pred)) +
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Pred)) +
   geom_point() +
   facet_wrap(~Species) +
   theme_classic()
@@ -39,7 +39,7 @@ Pulexdf%>%
 ##Check out the distribution
 library(fitdistrplus)
 
-descdist(Pulexdf$Pulex)
+descdist(Pulexdf$Pulex.surv)
 
 
 #Closest to Beta or gamma distributions. I'll try a glm with gamma
@@ -48,7 +48,7 @@ descdist(Pulexdf$Pulex)
 
 
 Pulexglm <- Pulexdf%>%
-  glm(Pulex ~ poly(TempC, 2)*Pred*Species, family = "poisson", data = .)
+  glm(Pulex.surv ~ poly(TempC, 2)*Pred*Species, family = "poisson", data = .)
 
 plot(Pulexglm)
 
@@ -66,7 +66,7 @@ Anova(Pulexglm, type = 3)
 
 library(lme4)
 Pulexglmer <- Pulexdf%>%
-  glmer(Pulex ~ poly(TempC, 2) * Species * Pred + (1|Trial) + (1|Bath),
+  glmer(Pulex.surv ~ poly(TempC, 2) * Species * Pred + (1|Trial) + (1|Bath),
         family = "poisson", data = .)
 
 plot(Pulexglmer)
@@ -88,16 +88,23 @@ Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T,
 
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
-Pulexdf%>%
+Pulexpredict$fit%>%
+  data.frame()%>%
+  str()
+
+Pulexdf <- Pulexdf%>%
   mutate(fit = data.frame(Pulexpredict$fit),
          lwr.CI = t(data.frame(Pulexpredict$ci.fit)[1,]),
          upr.CI = t(data.frame(Pulexpredict$ci.fit)[2,]))
 
-Pulexpredict$ci.fit%>%
-  data.frame()%>%
-  t()
 
 
+#Plot
+
+Pulexdf%>%
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Pred)) +
+  geom_point() +
+  geom_line(aes(y = fit))
 
 
 
