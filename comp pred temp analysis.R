@@ -89,12 +89,17 @@ Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T,
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
 Pulexdf%>%
-  mutate(fit = data.frame(Pulexpredict$fit))
+  mutate(fit = data.frame(Pulexpredict$fit),
+         lwr.CI = t(data.frame(Pulexpredict$ci.fit)[1,]),
+         upr.CI = t(data.frame(Pulexpredict$ci.fit)[2,]))
 
 Pulexpredict$ci.fit%>%
   data.frame()%>%
-  pivot_longer(X1:X90)%>%
-  view()
+  t()
+
+
+
+
 
 ##Trying bootMer function
 
