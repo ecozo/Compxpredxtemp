@@ -82,10 +82,22 @@ Anova(Pulexglmer, type = 3)
 
 library(bootpredictlme4)
 
-Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 1000)
+###Calculate the predicted values and CI by bootstrapping. Going with 10 simulations for now, but I'll need to increase that.
 
+Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 10, type = "response")
+
+###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
+
+Pulexdf%>%
+  mutate(fit = data.frame(Pulexpredict$fit))
+
+Pulexpredict$ci.fit%>%
+  data.frame()%>%
+  pivot_longer(X1:X90)%>%
+  view()
 
 ##Trying bootMer function
+
 
 b <- bootMer(Pulexglmer, FUN = function(x)predict(x, newdata = Pulexdf, re.form = NA), nsim = 10)
 
