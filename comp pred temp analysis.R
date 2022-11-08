@@ -75,11 +75,19 @@ plot(Pulexglmer)
 
 Anova(Pulexglmer, type = 3)
 
-mySumm <- function(.) { s <- sigma(.)
-c(beta =getME(., "beta"), sigma = s, sig01 = unname(s * getME(., "theta"))) }
-(t0 <- mySumm(Pulexglmer)) # just three parameters
 
-bootMer(Pulexglmer, mySumm, nsim = 10)
+#Generate predicted values and CI
+
+##Trying bootpredictlme4 package
+
+library(bootpredictlme4)
+
+Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 1000)
+
+
+##Trying bootMer function
+
+b <- bootMer(Pulexglmer, FUN = function(x)predict(x, newdata = Pulexdf, re.form = NA), nsim = 10)
 
 library(merTools)
 
