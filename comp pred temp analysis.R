@@ -48,14 +48,42 @@ descdist(Pulexdf$Pulex)
 
 
 Pulexglm <- Pulexdf%>%
-  glm((Pulex + 0.0001) ~ TempC * Species * Pred, family = "Gamma", data = .)
+  glm(Pulex ~ poly(TempC, 2)*Pred*Species, family = "poisson", data = .)
 
 plot(Pulexglm)
 
-library(lme4)
-Pulexdf%>%
-  glmer((Pulex + 0.001) ~ TempC * Species * Pred + (1|Trial) + (1|Bath), family = "Gamma", data = .)
+library(car)
 
+Anova(Pulexglm, type = 3)
+
+
+
+
+
+
+
+
+
+library(lme4)
+Pulexglmer <- Pulexdf%>%
+  glmer(Pulex ~ poly(TempC, 2) * Species * Pred + (1|Trial) + (1|Bath),
+        family = "poisson", data = .)
+
+plot(Pulexglmer)
+
+
+
+Anova(Pulexglmer, type = 3)
+
+mySumm <- function(.) { s <- sigma(.)
+c(beta =getME(., "beta"), sigma = s, sig01 = unname(s * getME(., "theta"))) }
+(t0 <- mySumm(Pulexglmer)) # just three parameters
+
+bootMer(Pulexglmer, mySumm, nsim = 10)
+
+library(merTools)
+
+predictInterval(Pulexglmer, newdata = Pulexdf, which = "fixed", include.resid.var = F)
 
 #Simo
 Simodf <- df%>%
