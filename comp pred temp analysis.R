@@ -56,13 +56,7 @@ library(car)
 
 Anova(Pulexglm, type = 3)
 
-
-
-
-
-
-
-
+#Mixed effects
 
 library(lme4)
 Pulexglmer <- Pulexdf%>%
@@ -88,25 +82,37 @@ Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T,
 
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
-Pulexpredict$fit%>%
-  data.frame()%>%
-  str()
+x<-Pulexpredict$fit%>%
+  data.frame()
 
 Pulexdf <- Pulexdf%>%
-  mutate(fit = data.frame(Pulexpredict$fit),
-         lwr.CI = t(data.frame(Pulexpredict$ci.fit)[1,]),
-         upr.CI = t(data.frame(Pulexpredict$ci.fit)[2,]))
+  mutate(fit = unname(data.frame(Pulexpredict$fit)$Pulexpredict.fit),
+         lwr.CI = unname(t(data.frame(Pulexpredict$ci.fit))[,1]),
+         upr.CI = unname(t(data.frame(Pulexpredict$ci.fit))[,2]))
 
 
 
 #Plot
 
+##Facet by comp
+
 Pulexdf%>%
   ggplot(aes(x = TempC, y = Pulex.surv, color = Pred)) +
   geom_point() +
-  geom_line(aes(y = fit))
+  geom_line(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Pred), alpha = 0.5, color = NA) +
+  facet_wrap(vars(Species)) +
+  theme_classic()
 
+##Facet by pred
 
+Pulexdf%>%
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Species)) +
+  geom_point() +
+  geom_line(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
+  facet_wrap(vars(Pred)) +
+  theme_classic()
 
 ##Trying bootMer function
 
