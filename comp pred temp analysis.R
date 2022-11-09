@@ -78,7 +78,7 @@ library(bootpredictlme4)
 
 ###Calculate the predicted values and CI by bootstrapping. Going with 10 simulations for now, but I'll need to increase that.
 
-Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 10, type = "response")
+Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
 
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
@@ -161,7 +161,7 @@ Anova(Simoglmer, type = 3)
 
 ###Calculate the predicted values and CI by bootstrapping. Going with 10 simulations for now, but I'll need to increase that.
 
-Simopredict <- predict(Simoglmer, newdata = Simodf, re.form = NA, se.fit = T, nsim = 10, type = "response")
+Simopredict <- predict(Simoglmer, newdata = Simodf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
 
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
