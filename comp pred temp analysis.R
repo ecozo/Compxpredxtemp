@@ -85,6 +85,7 @@ library(bootpredictlme4)
 
 Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
 
+
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
 
@@ -92,6 +93,8 @@ Pulexdf <- Pulexdf%>%
   mutate(fit = unname(data.frame(Pulexpredict$fit)$Pulexpredict.fit),
          lwr.CI = unname(t(data.frame(Pulexpredict$ci.fit))[,1]),
          upr.CI = unname(t(data.frame(Pulexpredict$ci.fit))[,2]))
+
+write.csv(Pulexdf, "Data/Pulexdf.csv", row.names = F)
 
 
 #Plot
@@ -171,6 +174,8 @@ Anova(Simoglmer, type = 3)
 
 Simopredict <- predict(Simoglmer, newdata = Simodf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
 
+
+
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
 
 
@@ -180,7 +185,7 @@ Simodf <- Simodf%>%
          lwr.CI = unname(t(data.frame(Simopredict$ci.fit))[,1]),
          upr.CI = unname(t(data.frame(Simopredict$ci.fit))[,2]))
 
-
+write.csv(Simodf, "Data/Simodf.csv", row.names = F)
 
 #Plot
 
