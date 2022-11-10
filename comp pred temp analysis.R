@@ -35,6 +35,11 @@ Pulexdf%>%
   facet_wrap(~Species) +
   theme_classic()
 
+###Histogram
+Pulexdf%>%
+  ggplot(aes(x = Pulex.surv)) +
+  geom_histogram() +
+  theme_classic()
 
 ##Check out the distribution
 library(fitdistrplus)
@@ -129,15 +134,18 @@ Simodf <- df%>%
   drop_na(Simo.surv) #Adding this because at the moment all the samples haven't been processed. I need to check any NA's after all data has be input
 
 ##Exploratory analysis
+###Plot
 Simodf%>%
   ggplot(aes(x = TempC, y = Simo.surv, color = Pred)) +
   geom_point() +
   facet_wrap(~Species) +
   theme_classic()
 
+###Histogram
 Simodf%>%
   ggplot(aes(x = Simo.surv)) +
-  geom_histogram()
+  geom_histogram() +
+  theme_classic()
 
 ##Check out the distribution
 
