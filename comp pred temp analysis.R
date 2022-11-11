@@ -57,9 +57,17 @@ Pulexglm <- Pulexdf%>%
 
 plot(Pulexglm)
 
-
-
 Anova(Pulexglm, type = 3)
+
+
+#Trying negative binomial
+
+
+Pulexglm.nb <- Pulexdf%>%
+  glm.nb(Pulex.surv ~ poly(TempC, 2)*Pred*Species, data = .)
+
+
+
 
 #Mixed effects
 
@@ -71,13 +79,28 @@ Pulexglmer <- Pulexdf%>%
 
 plot(Pulexglmer)
 
+#Checking for overdispersion
+
+
+library(blmeco)
+
+dispersion_glmer(Pulexglmer)
+
+#Value is 8.6, which does indicate overdispersion
+
+
 
 #Poisson has a concerning cluster along the bottom, left diagonal. Trying negative binomial
 
 Pulexnb <- Pulexdf%>%
   glmer.nb(Pulex.surv ~ poly(TempC, 2) * Species * Pred  + (1|Trial) + (1|Bath), data = .)
 
-#Singular fit no matter which random effects I include
+#Singular fit no matter which random effects I include. I've seen a couple suggestions online to use bglmer function, which uses bayesian methods to overcome this. Trying here
+
+library(blme)
+
+Pulexdf%>%
+  bglmer(Pulex.surv ~ poly())
 
 plot(Pulexnb)
 
@@ -97,7 +120,7 @@ library(bootpredictlme4)
 
 ###Calculate the predicted values and CI by bootstrapping. Going with 10 simulations for now, but I'll need to increase that.
 
-Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
+Pulexpredict <- predict(Pulexglmer, newdata = Pulexdf, re.form = NA, se.fit = T, nsim = 10, type = "response")
 
 
 ###Create a data frame out of the fit and CI lists. They'll need to be transposed to bind to Pulexdf
@@ -126,10 +149,11 @@ Pulexdf%>%
 ##Facet by pred
 
 Pulexdf%>%
-  ggplot(aes(x = TempC, y = Pulex.surv, color = Species)) +
+  ggplot(aes(x = TempC, y = log(Pulex.surv), color = Species)) +
   geom_point() +
-  geom_line(aes(y = fit)) +
-  geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
+  stat_smooth(se=F, method="lm", formula=y~poly(x,2))+
+  #geom_line(aes(y = fit)) +
+  #geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
   facet_wrap(vars(Pred)) +
   theme_classic()
 
@@ -199,7 +223,7 @@ Anova(Simoglmer, type = 3)
 
 ###Calculate the predicted values and CI by bootstrapping. Going with 10 simulations for now, but I'll need to increase that.
 
-Simopredict <- predict(Simoglmer, newdata = Simodf, re.form = NA, se.fit = T, nsim = 1000, type = "response")
+Simopredict <- predict(Simoglmer, newdata = Simodf, re.form = NA, se.fit = T, nsim = 10, type = "response")
 
 
 
