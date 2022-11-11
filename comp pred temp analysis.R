@@ -66,10 +66,30 @@ Anova(Pulexglm, type = 3)
 Pulexglm.nb <- Pulexdf%>%
   glm.nb(Pulex.surv ~ poly(TempC, 2)*Pred*Species, data = .)
 
+#Plot facet by comp
 
+Pulexdf%>%
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Pred)) +
+  geom_point() +
+  geom_line(aes(y = predict(Pulexglm.nb, type = "response"))) +
+  geom_ribbon(aes(ymax = (predict(Pulexglm.nb, type = "response") + predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
+                     ymin = (predict(Pulexglm.nb, type = "response") - predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
+                  fill = Pred,linetype = NA),  alpha = 0.5, ) +
+  facet_wrap(vars(Species)) +
+  theme_classic()
 
+#Plot facet by pred
+Pulexdf%>%
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Species)) +
+  geom_point() +
+  geom_line(aes(y = predict(Pulexglm.nb, type = "response"))) +
+  geom_ribbon(aes(ymax = (predict(Pulexglm.nb, type = "response") + predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
+                  ymin = (predict(Pulexglm.nb, type = "response") - predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
+                  fill = Species,linetype = NA),  alpha = 0.5, ) +
+  facet_wrap(vars(Pred)) +
+  theme_classic()
 
-#Mixed effects
+#######Mixed effects
 
 library(lme4)
 
@@ -81,35 +101,26 @@ plot(Pulexglmer)
 
 #Checking for overdispersion
 
-
 library(blmeco)
 
 dispersion_glmer(Pulexglmer)
 
 #Value is 8.6, which does indicate overdispersion
 
+#Poisson also has a concerning cluster along the bottom, left diagonal. Trying negative binomial
 
-
-#Poisson has a concerning cluster along the bottom, left diagonal. Trying negative binomial
-
-Pulexnb <- Pulexdf%>%
+Pulexglmer.nb <- Pulexdf%>%
   glmer.nb(Pulex.surv ~ poly(TempC, 2) * Species * Pred  + (1|Trial) + (1|Bath), data = .)
 
-#Singular fit no matter which random effects I include. I've seen a couple suggestions online to use bglmer function, which uses bayesian methods to overcome this. Trying here
+#Singular fit
 
-library(blme)
+#Trying a general model on log transformed data
 
-Pulexdf%>%
-  bglmer(Pulex.surv ~ poly())
-
-plot(Pulexnb)
-
-#Residuals show the model is underestimating.
+Pulexlmer <- Pulexdf%>%
+  lmer(log(Pulex.surv + 0.00001) ~ poly(TempC, 2) * Species * Pred +(1|Bath), data = .)
 
 
-library(car)
 
-Anova(Pulexglmer, type = 3)
 
 
 #Generate predicted values and CI
@@ -149,11 +160,11 @@ Pulexdf%>%
 ##Facet by pred
 
 Pulexdf%>%
-  ggplot(aes(x = TempC, y = log(Pulex.surv), color = Species)) +
+  ggplot(aes(x = TempC, y = Pulex.surv, color = Species)) +
   geom_point() +
-  stat_smooth(se=F, method="lm", formula=y~poly(x,2))+
-  #geom_line(aes(y = fit)) +
-  #geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
+  #stat_smooth(se=F, method="lm", formula=y~poly(x,2))+
+  geom_line(aes(y = fit)) +
+  geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
   facet_wrap(vars(Pred)) +
   theme_classic()
 
@@ -192,7 +203,14 @@ Simodf%>%
 
 descdist(Simodf$Simo.surv)
 
-#Mixed effects
+#####Fixed effects
+
+Simoglm.nb <- Simodf%>%
+  glm.nb(Simo.surv ~ poly(TempC, 2) * Species * Pred, data = .)
+
+
+Anova(Simoglm.nb, type = 3)
+#####Mixed effects
 
 library(lme4)
 Simoglmer <- Simodf%>%
