@@ -57,13 +57,14 @@ Pulexglm <- Pulexdf%>%
 
 plot(Pulexglm)
 
-library(car)
+
 
 Anova(Pulexglm, type = 3)
 
 #Mixed effects
 
 library(lme4)
+
 Pulexglmer <- Pulexdf%>%
   glmer(Pulex.surv ~ poly(TempC, 2) * Species * Pred + (1|Trial) + (1|Bath),
         family = "poisson", data = .)
@@ -71,6 +72,19 @@ Pulexglmer <- Pulexdf%>%
 plot(Pulexglmer)
 
 
+#Poisson has a concerning cluster along the bottom, left diagonal. Trying negative binomial
+
+Pulexnb <- Pulexdf%>%
+  glmer.nb(Pulex.surv ~ poly(TempC, 2) * Species * Pred  + (1|Trial) + (1|Bath), data = .)
+
+#Singular fit no matter which random effects I include
+
+plot(Pulexnb)
+
+#Residuals show the model is underestimating.
+
+
+library(car)
 
 Anova(Pulexglmer, type = 3)
 
@@ -162,6 +176,19 @@ Simoglmer <- Simodf%>%
         family = "poisson", data = .)
 
 plot(Simoglmer)
+
+
+#Poisson residuals don't look great. Trying negative binomial
+
+Simonb <- Simodf%>%
+  glmer.nb(Simo.surv ~ poly(TempC, 2) * Species * Pred + (1|Trial) + (1|Bath), data = .)
+
+#Singular boundary
+
+plot(Simonb)
+
+#Residuals show model is unerestimating
+
 
 Anova(Simoglmer, type = 3)
 
