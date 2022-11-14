@@ -16,7 +16,8 @@ library(tidyverse)
 
 
 df <- read.csv("Data/comp_data.csv", header = T)%>%
-  mutate_at(vars(Trial, Bath, Location, Species, Pred), as.factor)
+  mutate_at(vars(Trial, Bath, Location, Species, Pred), as.factor) %>%
+  mutate(Species = factor(Species, c("Pulex", "Simo", "Comp")))
 
 
 #I'll analyze the simo and pulex data separately
@@ -53,18 +54,27 @@ descdist(Pulexdf$Pulex.surv)
 
 
 Pulexglm <- Pulexdf%>%
-  glm(Pulex.surv ~ poly(TempC, 2)*Pred*Species, family = "poisson", data = .)
+  glm(Pulex.surv ~ poly(TempC, 2)*Pred*Species, family = "quasipoisson", data = .)
 
 plot(Pulexglm)
 
 Anova(Pulexglm, type = 3)
 
+#Checking for overdispersion
 
+dispersiontest(Pulexglm)
+
+#Yes it is overdispersed.
 #Trying negative binomial
+
 
 
 Pulexglm.nb <- Pulexdf%>%
   glm.nb(Pulex.surv ~ poly(TempC, 2)*Pred*Species, data = .)
+
+
+plot(Pulexglm.nb)
+
 
 #Plot facet by comp
 
@@ -74,9 +84,11 @@ Pulexdf%>%
   geom_line(aes(y = predict(Pulexglm.nb, type = "response"))) +
   geom_ribbon(aes(ymax = (predict(Pulexglm.nb, type = "response") + predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
                      ymin = (predict(Pulexglm.nb, type = "response") - predict(Pulexglm.nb, type = "response", se.fit = T)$se.fit),
-                  fill = Pred,linetype = NA),  alpha = 0.5, ) +
-  facet_wrap(vars(Species)) +
-  theme_classic()
+                  fill = Pred,linetype = NA),  alpha = 0.5) +
+  facet_wrap(vars(Species), labeller = labeller(Species = c("Pulex" = "No competitor", "Comp" = "With competitor"))) +
+  theme_classic() +
+  scale_fill_discrete(name = "Predator") +
+  scale_color_discrete(name = "Predator")
 
 #Plot facet by pred
 Pulexdf%>%
@@ -105,7 +117,20 @@ library(blmeco)
 
 dispersion_glmer(Pulexglmer)
 
-#Value is 8.6, which does indicate overdispersion
+#Value is 8.9, which does indicate overdispersion. Trying another function for testing overdispersion following suggestions at https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion
+
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)
+  rp <- residuals(model,type="pearson")
+  Pearson.chisq <- sum(rp^2)
+  prat <- Pearson.chisq/rdf
+  pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+  c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+overdisp_fun(Pulexglmer)
+
+
 
 #Poisson also has a concerning cluster along the bottom, left diagonal. Trying negative binomial
 
@@ -114,14 +139,14 @@ Pulexglmer.nb <- Pulexdf%>%
 
 #Singular fit
 
+
+
 #Trying a general model on log transformed data
 
 Pulexlmer <- Pulexdf%>%
-  lmer(log(Pulex.surv + 0.00001) ~ poly(TempC, 2) * Species * Pred +(1|Bath), data = .)
+  lmer(log(Pulex.surv + 0.00001) ~ poly(TempC, 2) * Species * Pred + (1|Trial), data = .)
 
-
-
-
+plot(Pulexlmer)
 
 #Generate predicted values and CI
 
@@ -210,6 +235,30 @@ Simoglm.nb <- Simodf%>%
 
 
 Anova(Simoglm.nb, type = 3)
+
+plot(Simoglm.nb)
+
+Simodf%>%
+  ggplot(aes(x = TempC, y = Simo.surv, color = Pred)) +
+  geom_point() +
+  geom_line(aes(y = predict(Simoglm.nb, type = "response"))) +
+  geom_ribbon(aes(ymax = (predict(Simoglm.nb, type = "response") + predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
+                  ymin = (predict(Simoglm.nb, type = "response") - predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
+                  fill = Pred,linetype = NA),  alpha = 0.5, ) +
+  facet_wrap(vars(Species)) +
+  theme_classic()
+
+#Plot facet by pred
+Simodf%>%
+  ggplot(aes(x = TempC, y = Simo.surv, color = Species)) +
+  geom_point() +
+  geom_line(aes(y = predict(Simoglm.nb, type = "response"))) +
+  geom_ribbon(aes(ymax = (predict(Simoglm.nb, type = "response") + predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
+                  ymin = (predict(Simoglm.nb, type = "response") - predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
+                  fill = Species,linetype = NA),  alpha = 0.5, ) +
+  facet_wrap(vars(Pred)) +
+  theme_classic()
+
 #####Mixed effects
 
 library(lme4)
