@@ -78,8 +78,8 @@ plot(Pulexglm.nb)
 
 #For making plots I'm going to create standardized text sizes
 Textsize <- theme(legend.text = element_text(size = 12),
-                  legend.title = element_text(size = 12),
-                  axis.title = element_text(size = 14),
+                  legend.title = element_text(size = 16),
+                  axis.title = element_text(size = 16),
                   axis.text = element_text(size = 12),
                   strip.text = element_text(size = 12))
 
@@ -258,8 +258,12 @@ Simodf%>%
   geom_ribbon(aes(ymax = (predict(Simoglm.nb, type = "response") + predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
                   ymin = (predict(Simoglm.nb, type = "response") - predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
                   fill = Pred,linetype = NA),  alpha = 0.5, ) +
-  facet_wrap(vars(Species)) +
-  theme_classic()
+  facet_wrap(vars(Species), labeller = labeller(Species = c("Simo" = "No competitor", "Comp" = "With competitor"))) +
+  theme_classic() +
+  scale_fill_discrete(name = "Predator", labels = c( "No", "Yes"))+
+  scale_color_discrete(name = "Predator", labels = c( "No", "Yes"))+
+  labs(x = "Temperature (C)", y = "Number of survivors +/- SE") +
+  Textsize
 
 #Plot facet by pred
 Simodf%>%
@@ -269,8 +273,12 @@ Simodf%>%
   geom_ribbon(aes(ymax = (predict(Simoglm.nb, type = "response") + predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
                   ymin = (predict(Simoglm.nb, type = "response") - predict(Simoglm.nb, type = "response", se.fit = T)$se.fit),
                   fill = Species,linetype = NA),  alpha = 0.5, ) +
-  facet_wrap(vars(Pred)) +
-  theme_classic()
+  facet_wrap(vars(Pred), labeller = labeller(Pred = c("N" = "No Predator", "Y" = "With Predator"))) +
+  theme_classic() +
+  scale_fill_discrete(name = "Competitor", labels = c( "No", "Yes"))+
+  scale_color_discrete(name = "Competitor", labels = c( "No", "Yes"))+
+  labs(x = "Temperature (C)", y = "Number of survivors +/- SE") +
+  Textsize
 
 #####Mixed effects
 
