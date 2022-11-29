@@ -242,8 +242,11 @@ Pulexdfglmer%>%
   geom_line(aes(y = fit)) +
   geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Pred), alpha = 0.5, color = NA) +
   facet_wrap(vars(Species)) +
-  labs(title = "Poisson glmer") +
-  theme_classic()
+  labs(title = "Pulex Poisson glmer") +
+  theme_classic() +
+  Textsize
+
+ggsave("Figures/Pulex.comp.jpeg")
 
 ##Facet by pred
 
@@ -254,8 +257,12 @@ Pulexdfglmer%>%
   geom_line(aes(y = fit)) +
   geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
   facet_wrap(vars(Pred)) +
-  labs(title = "Poisson glmer") +
-  theme_classic()
+  labs(title = "Pulex Poisson glmer") +
+  theme_classic() +
+  Textsize
+
+ggsave("Figures/Pulex.pred.jpeg")
+
 
 ###Trying negative binomial glmer
 
@@ -511,7 +518,10 @@ Simodfglmer%>%
   geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Pred), alpha = 0.5, color = NA) +
   facet_wrap(vars(Species)) +
   labs(title = "Simo Poisson glmer") +
-  theme_classic()
+  theme_classic() +
+  Textsize
+
+ggsave("Figures/Simo.comp.jpeg")
 
 ##Facet by pred
 
@@ -523,7 +533,11 @@ Simodfglmer%>%
   geom_ribbon(aes(ymin = lwr.CI, ymax = upr.CI, fill= Species), alpha = 0.5, color = NA) +
   facet_wrap(vars(Pred)) +
   labs(title = "Simo Poisson glmer") +
-  theme_classic()
+  theme_classic() +
+  Textsize
+
+ggsave("Figures/Simo.pred.jpeg")
+
 
 #Trying a general model on log transformed data
 
